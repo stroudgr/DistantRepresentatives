@@ -44,7 +44,6 @@ def contains_point(d, delta):
                 p is the center of disc, and Q consists of the 4 corners of the
                 grid cell.
 
-    TODO:
     For Q above, since they are grid points, they return the points in grid
     LAMBDA, as opposed to delta*LAMBDA, which is the relevant grid (this ensures
     the points are integer points, saving the need to convert to the
@@ -55,11 +54,11 @@ def contains_point(d, delta):
     """
 
     # Outside the square/disc, or touching the edge
-    verticalGridLineLeft = (d[0]-d[2]) // delta
+    verticalGridLineLeft = math.floor((d[0]-d[2]) / delta)
     verticalGridLineRight = math.ceil((d[0]+d[2]) / delta)
 
     # Outside the square/disc, or touching the edge
-    horizontalGridLineBelow = (d[1]-d[2]) // delta
+    horizontalGridLineBelow = math.floor((d[1]-d[2]) / delta)
     horizontalGridLineAbove = math.ceil((d[1]+d[2]) / delta)
 
     # touching the edge case vertically
@@ -77,19 +76,19 @@ def contains_point(d, delta):
         # Hits grid edge, but had no grid points inside
         if (d[0]-d[2]) % delta == 0:
             return (1, (d[0]-d[2], d[1]+d[2]),
-                    [(d[0]-d[2], delta*(horizontalGridLineBelow)),
-                     (d[0]-d[2], delta*(horizontalGridLineBelow + 1))]  )
+                    [(d[0]-d[2], horizontalGridLineBelow),
+                     (d[0]-d[2], horizontalGridLineBelow + 1)]  )
         else:    #if(d[1]+d[2]) % delta == 0:
             return (1, (d[0]+d[2], d[1]+d[2]),
-                    [(d[0]+d[2], delta*(horizontalGridLineBelow)),
-                     (d[0]+d[2], delta*(horizontalGridLineBelow + 1))]  )
+                    [(d[0]+d[2], horizontalGridLineBelow),
+                     (d[0]+d[2], horizontalGridLineBelow + 1)]  )
 
     elif verticalGridLineLeft + 1 < verticalGridLineRight: # MIDDLE vertical line exists
 
         # touching the edge case horizontally
         if (d[1]-d[2]) % delta == 0 or (d[1]+d[2]) % delta == 0:
             return (0, None)# MIDDLE vertical lines intersect horizontalGridLine, which
-            # hits the rectangle edge
+            # hits the disc edge
 
         # Both outside the square/disc, and at least one horizontal line
         # exists in between.
@@ -97,32 +96,33 @@ def contains_point(d, delta):
             return (0, None) # One of the vertical edges has a grid point
 
         return (1, (delta*(verticalGridLineLeft + 1), d[1]+d[2]), # Hits grid edge
-                    [( delta*(verticalGridLineLeft + 1), delta*(horizontalGridLineBelow) ),
-                     ( delta*(verticalGridLineLeft + 1), delta*(horizontalGridLineAbove) ) ] )
+                    [( verticalGridLineLeft + 1, horizontalGridLineBelow ),
+                     ( verticalGridLineLeft + 1, horizontalGridLineAbove ) ] )
 
-    else: #Neither vertical lines touch rect, and nothing inbetween these two lines
+    else: #Neither vertical lines touch disc, and nothing inbetween these two lines
 
         # touching the edge case horizontally
         if (d[1]-d[2]) % delta == 0:
             return (1, (d[0]-d[2] , d[1]-d[2]),
-                    [(delta*verticalGridLineLeft,  d[1]-d[2]),
-                     (delta*verticalGridLineRight, d[1]-d[2]) ])
+                    [(verticalGridLineLeft,  horizontalGridLineBelow ),
+                     (verticalGridLineRight, horizontalGridLineBelow ) ])
+
         if (d[1]+d[2]) % delta == 0:
             return (1, (d[0]-d[2] , d[1]+d[2]),
-                    [(delta*verticalGridLineLeft,  d[1]+d[2]),
-                     (delta*verticalGridLineRight, d[1]+d[2]) ])
+                    [(verticalGridLineLeft,  horizontalGridLineAbove ),
+                     (verticalGridLineRight, horizontalGridLineAbove ) ])
 
         if horizontalGridLineBelow + 1 < horizontalGridLineAbove:
             return (1, (d[0]-d[2] , delta*(horizontalGridLineBelow + 1)),
-                    [( delta*verticalGridLineLeft,  delta*(horizontalGridLineBelow + 1) ),
-                     ( delta*verticalGridLineRight, delta*(horizontalGridLineBelow + 1) )])
+                    [( verticalGridLineLeft,  horizontalGridLineBelow + 1 ),
+                     ( verticalGridLineRight, horizontalGridLineBelow + 1 )])
 
         return (2, (d[0], d[1]),
                       [
-                       (delta*verticalGridLineLeft,  delta*horizontalGridLineBelow),
-                       (delta*verticalGridLineRight, delta*horizontalGridLineBelow),
-                       (delta*verticalGridLineRight, delta*horizontalGridLineAbove),
-                       (delta*verticalGridLineLeft,  delta*horizontalGridLineAbove)
+                       (verticalGridLineLeft,  horizontalGridLineBelow),
+                       (verticalGridLineRight, horizontalGridLineBelow),
+                       (verticalGridLineRight, horizontalGridLineAbove),
+                       (verticalGridLineLeft,  horizontalGridLineAbove)
                       ])
 
     return False
@@ -133,6 +133,7 @@ def inDisc(p, d):
     x, y = p
     cx, cy, R = d
     return cx - R  <= x and x <= cx + R and cy- R  <= y and y <= cy + R
+
 
 def getGridPointsInDiscStupid(d, delta, Q):
     """In a brute force fashion, finds all grid points within the disc,
@@ -148,7 +149,7 @@ def getGridPointsInDiscStupid(d, delta, Q):
 
         for j in range(ymin, ymax+1):
 
-            if (delta*i, delta*j) not in Q and inDisc((delta*i, delta*j), d):
+            if (i, j) not in Q and inDisc((delta*i, delta*j), d):
                 S = S.union({(i, j)})
 
     return S
@@ -259,7 +260,7 @@ def Placement(D, delta):
     for i in range(n):
         for j in range(n):
             if i !=j:
-                dist = max(abs(p[i][0]-p[j][0]), abs(p[i][1]-p[j][1]) )
+                dist = LInf(p[0], p[1])
                 if dist < delta:
                     print("FAIL: points are not far apart")
                     return p
