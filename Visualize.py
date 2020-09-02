@@ -1,24 +1,25 @@
 import os, sys
 import math
 from PIL import Image, ImageDraw
-from DistantRepresentatives import Placement, DistantRepresentatives
-
+from DistantRepresentatives import LInf
+from DistantRepresentativesDiscs import DistantRepresentativesDiscs
 
 D = [(100, 100, 30), (50,50, 20), (100, 150, 3), (30, 150, 3)]
 w, h = 220, 190
 
+dr = DistantRepresentativesDiscs(LInf)
+assert (dr is not None)
 
-
-placement = False
+placement = True
 drawGrid = True
 
 
 if placement:
 
-    delta = 385/6
+    delta = 26
     assert(delta >= 5)
 
-    p = Placement(D, delta)
+    p = dr.Placement(D, delta)
 
     if p is None:
         exit()
@@ -55,19 +56,14 @@ if placement:
 
 else:
 
-    # TODO!!!!!!!!!!!!!!!1
-
-
-    # Clearly something is broken....
-
-
-    p = DistantRepresentatives(D)
+    p = dr.getDistantRepresentatives(D)
 
     delta = 100000000000
 
     for i in range(len(D)):
         for j in range(i+1, len(D)):
-            delta = min(delta, max( abs(p[i][0] - p[j][0]), abs(p[i][1] - p[j][1])  ))
+
+            delta = min(delta, LInf(p[i], p[j]))
 
     print("Optimal delta = ", delta)
 
