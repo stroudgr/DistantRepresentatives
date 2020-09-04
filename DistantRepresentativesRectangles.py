@@ -124,57 +124,128 @@ class DistantRepresentativesRectangles:
         return False
 
 
-    def inDisc(self, p, d):
-        """Returns true iff p is in disc d"""
+    def inRect(self, p, r):
+        """Returns true iff p is in rectangle r"""
         x, y = p
-        cx, cy, R = d
-        return cx - R  <= x and x <= cx + R and cy- R  <= y and y <= cy + R
+        cx, cy, W, H = r
+        return cx - W  <= x and x <= cx + W and cy - H  <= y and y <= cy + H
+
+    def plusBlockerIntersectsRect(self, r, b, delta):
+        x,y = b
+        l = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
+        if any(self.inRect(z, r)  for z in l):
+            return True
+
+        cx, cy, W, H = r
+        if (cx - W <= delta*x and cx+W >= delta*x)
+            and   ((cy - H >= delta*(y-1) and cy-H <= delta*(y+1))
+                or (cy + H >= delta*(y-1) and cy+H <= delta*(y+1))):
+                return True
+
+        if (cy - H <= delta*y and cy+H >= delta*y)
+            and   ((cx - W >= delta*(x-1) and cx-W <= delta*(x+1))
+                or (cx + W >= delta*(z-1) and cx+W <= delta*(x+1))):
+                return True
+
+        return False
 
 
-    def getGridPointsInDiscStupid(self, d, delta, Q):
-        """In a brute force fashion, finds all grid points within the disc,
-        excluding elements of Q."""
-        cx, cy, W, H = d
-        xmin = math.floor((cx-R)/delta)
-        xmax = math.ceil((cx+R)/delta)
-        ymin = math.floor((cy-R)//delta)
-        ymax = math.ceil((cy+R)/delta)
+    def LBlockerIntersectsRect(self, r, b, delta):
+
+        raise NotImplementedError
+
+        # TODO!
+
+        x,y = b
+        l = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
+        if any(self.inRect(z, r)  for z in l):
+            return True
+
+        cx, cy, W, H = r
+        if (cx - W <= delta*x and cx+W >= delta*x)
+            and   ((cy - H >= delta*(y-1) and cy-H <= delta*(y+1))
+                or (cy + H >= delta*(y-1) and cy+H <= delta*(y+1))):
+                return True
+
+        if (cy - H <= delta*y and cy+H >= delta*y)
+            and   ((cx - W >= delta*(x-1) and cx-W <= delta*(x+1))
+                or (cx + W >= delta*(z-1) and cx+W <= delta*(x+1))):
+                return True
+
+        return False
+
+    def isPlusBlockerCentre(self, b):
+        i,j=b
+        assert type(i) = int and type(j) = int
+
+        return (i+j) % 4 == 0
+
+    def isLBlockerCentre(self, b):
+        i,j=b
+        assert type(i) = int and type(j) = int
+
+        return (-i+j) % 3 == 0
+
+    # + blockers determined by centre grid points
+    def getPlusBlockersInDiscStupid(self, r, delta, n, Q):
+        """In a brute force fashion, finds all + blocker shapes that intersect
+        the rectangle, excluding blockers of Q."""
+        cx, cy, W, H = r
+        xmin = math.floor((cx-W)/delta)
+        xmax = math.ceil((cx+W)/delta)
+        ymin = math.floor((cy-H)//delta)
+        ymax = math.ceil((cy+H)/delta)
 
         S = set()
         for i in range(xmin, xmax+1):
 
             for j in range(ymin, ymax+1):
 
-                if (i, j) not in Q and self.inDisc((delta*i, delta*j), d):
+                if not self.isPlusBlockerCentre((i,j)):
+                    continue
+
+                if (i, j) not in Q and self.plusBlockerIntersectsRect(r, (i, j), delta):
                     S = S.union({(i, j)})
+
+                    # THIS is probably a bad idea!
+                    #if len(S) >= n:
+                    #    return S
 
         return S
 
 
-    def getGridPointsInDisc(self):
-        # See Cabello's paper for how to do this efficently
-        """In a smart way, find all grid points within the disc."""
+    def getGridPointsInRect(self):
+        # TODO what is our approach here?
+        """In a smart way, find all the blocker shapes that intersect the rectangle."""
         raise NotImplementedError
 
-    def Placement(self, D, delta):
+
+    def plusBlockerAndRectFar(r, b, delta):
+        raise NotImplementedError
+        pass
+
+    def Placement(self, R, delta):
         """
-        Given a set of L_infinity discs D=[d1,d2,d3,...,dn], and real value delta.
+        Given a set of rectangles R=[r1,r2,r3,...,rn], and real value delta.
 
         Returns a placement of representatives p=(p1,p2,...,pn), which satisfies:
-        - d(pi,pj) >= delta    for all i != j
+        - d_l(pi,pj) >= delta    for all i != j, where l is 1,2,inf
 
-        This will always succeed when delta <= delta*/2, where delta* is the largest
-        value for which you can find a placement.
+        This will always succeed when delta <= delta*/f_l, where delta* is the largest
+        value for which you can find a placement, and
 
-        This may succeed when delta*/2 < delta <= delta*, but this is not
+        f_1 = fill in  in the L1 norm
+        f_2 =
+        f_inf =
+
+        This may succeed when delta*/f_l < delta <= delta*, but this is not
         guaranteed. This will fail when delta > delta*, as no such placement exists.
         """
 
         Q = set()
-        p = [None] * len(D)
+        p = [None] * len(R)
 
-        # Booleans telling us is square are "small" or not.
-        contains_point_bools = [self.contains_point(d, delta) for d in D]
+        blockers = [self.getPlusBlockersInDiscStupid(r, delta, len(R), set()) for r in R]
 
         # These discs contain no grid points, so their representatives are:
         # - the centre, if the disc is completely contained within a cell.
@@ -183,40 +254,42 @@ class DistantRepresentativesRectangles:
         #   of these representatives.
         # The centres/edge points may be too close to each other, this will be
         # checked later.
-        for i,d in enumerate(D):
+        num_small_discs = len(R)
+        for i,r in enumerate(R):
 
-            if contains_point_bools[i][0] != 0:
-                cx, cy, r = d
+            if len(blockers[i]) != 0:
+                num_small_discs -= 1
+                cx, cy, w, h = r
+                p[i] = (cx, cy)
 
-                if contains_point_bools[i][0] == 1: # Touches edge
-                    p[i] = contains_point_bools[i][1]
-                    Q = Q.union(set(contains_point_bools[i][2]))
+                xmin = math.floor(cx/delta)-2
+                xmax = math.floor(cx/delta)+3
 
-                else: # Is a small rectangle,
-                    p[i] = (cx, cy)
+                ymin = math.floor(cy/delta)-2
+                ymax = math.floor(cy/delta)+3
 
-                    Q = Q.union(set(contains_point_bools[i][2]))
+                for x in range(xmin, xmax+1):
+                    for y in range(ymin, ymax+1):
+                        if isPlusBlockerCentre(x,y):
+                            if not self.plusBlockerAndRectFar(r, (x,y), delta):
+                                Q = Q.union({(x,y)})
 
         P = set()
-        Pi = [set()]*len(D)
+        #Pi = [set()]*len(D) # now called blockers
 
-        # The remaining discs:
+        # The remaining rectangles:
         # Find all the grid points within each disc
-        for i,d in enumerate(D):
-            if contains_point_bools[i][0] == 0:
-                Pi[i] = self.getGridPointsInDiscStupid(d, delta, Q)
-                P = P.union(Pi[i])
+        for i,d in enumerate(R):
+            blockers[i] = blockers[i].difference(Q)
+            P = P.union(blockers[i])
 
-        # Enumerate all the grid points.
+        # Enumerate all the blockers.
         P = list(P)
         P_index = dict()
         for i,x in enumerate(P):
             P_index[x] = i
 
-
-        num_small_discs = sum(1 if x[0] != 0 else 0 for x in contains_point_bools)
-
-        n = len(D)
+        n = len(R)
         m = len(P)
 
         # Create a bipartite graph between all the discs (L) and all the grid points (R)
@@ -224,7 +297,7 @@ class DistantRepresentativesRectangles:
         # point is in that disc.
         G = BipartiteGraph(n, m)
         for i,d in enumerate(D):
-            for x in Pi[i]:
+            for x in blockers[i]:
                 G.addEdge(i, P_index[x])
 
         # Find a maximal matching that tries to ensure everything on the left side
@@ -245,6 +318,10 @@ class DistantRepresentativesRectangles:
         for i in range(n):
             for j in range(i+1, m):
                 if M[i][j] == 1:
+
+                    # TODO
+                    #p[i] = findIntersectionPoint()
+
                     p[i] = P[j]
                     p[i] = (delta*p[i][0], delta*p[i][1])
 
