@@ -137,14 +137,12 @@ class DistantRepresentativesRectangles:
             return True
 
         cx, cy, W, H = r
-        if (cx - W <= delta*x and cx+W >= delta*x)
-            and   ((cy - H >= delta*(y-1) and cy-H <= delta*(y+1))
-                or (cy + H >= delta*(y-1) and cy+H <= delta*(y+1))):
+        if ((cx - W <= delta*x and cx+W >= delta*x) and ((cy - H >= delta*(y-1) and cy-H <= delta*(y+1)) or (cy + H >= delta*(y-1) and cy+H <= delta*(y+1)))):
                 return True
 
-        if (cy - H <= delta*y and cy+H >= delta*y)
+        if ((cy - H <= delta*y and cy+H >= delta*y)
             and   ((cx - W >= delta*(x-1) and cx-W <= delta*(x+1))
-                or (cx + W >= delta*(z-1) and cx+W <= delta*(x+1))):
+                or (cx + W >= delta*(z-1) and cx+W <= delta*(x+1)))):
                 return True
 
         return False
@@ -162,27 +160,27 @@ class DistantRepresentativesRectangles:
             return True
 
         cx, cy, W, H = r
-        if (cx - W <= delta*x and cx+W >= delta*x)
+        if ((cx - W <= delta*x and cx+W >= delta*x)
             and   ((cy - H >= delta*(y-1) and cy-H <= delta*(y+1))
-                or (cy + H >= delta*(y-1) and cy+H <= delta*(y+1))):
+                or (cy + H >= delta*(y-1) and cy+H <= delta*(y+1)))):
                 return True
 
-        if (cy - H <= delta*y and cy+H >= delta*y)
+        if ((cy - H <= delta*y and cy+H >= delta*y)
             and   ((cx - W >= delta*(x-1) and cx-W <= delta*(x+1))
-                or (cx + W >= delta*(z-1) and cx+W <= delta*(x+1))):
+                or (cx + W >= delta*(z-1) and cx+W <= delta*(x+1)))):
                 return True
 
         return False
 
     def isPlusBlockerCentre(self, b):
         i,j=b
-        assert type(i) = int and type(j) = int
+        assert type(i) == int and type(j) == int
 
         return (i+j) % 4 == 0
 
     def isLBlockerCentre(self, b):
         i,j=b
-        assert type(i) = int and type(j) = int
+        assert type(i) == int and type(j) == int
 
         return (-i+j) % 3 == 0
 
@@ -220,9 +218,44 @@ class DistantRepresentativesRectangles:
         raise NotImplementedError
 
 
-    def plusBlockerAndRectFar(r, b, delta):
-        raise NotImplementedError
-        pass
+    def inPlus(self, b, p, delta,err=0.00001):
+        x,y=b
+        a,b=p
+        if (delta*(x-1) <= a and a <= delta*(x+1) and abs(delta*y-b) < err):
+            return True
+
+        return (delta*(y-1) <= b and b <= delta*(y+1) and abs(delta*x-a) < err)
+
+
+    def plusBlockerAndRectFarApart(r, b, delta, norm):
+        """
+        Given rectangle r and plus blocker b, returns false if the blocker
+        and rectangle are minimum distance strictly less than delta.
+
+        """
+
+        cx,cy,w,h = r
+        rect_corners=[(cx-w,cy-h), (cx+w,cy-h), (cx-w,cy+h), (cx+w,cy+h)]
+        x,y=b
+        blocker_points=[(x-1,y),(x,y),(x+1,y),(x,y-1),(x,y+1)]
+        blocker_points = [(delta*a, delta*b) for a,b in blocker_points]
+
+        mindist = 100000000000
+        for p in rect_corners:
+            for q in blocker_points:
+                mindist = min(mindist, norm(p, q))
+                if self.inRect((q[0],p[1]) , r):
+                    mindist = min(mindist, norm((q[0],p[1]), q))
+                if self.inRect((p[0],q[1]) , r):
+                    mindist = min(mindist, norm((p[0],q[1]), q))
+
+                if self.inPlus(b, (p[0],q[1]), delta):
+                    mindist = min(mindist, norm((p[0],q[1]), p))
+
+                if self.inPlus(b, (q[0],p[1]), delta):
+                    mindist = min(mindist, norm((p[0],q[1]), p))
+
+        return mindist >= delta
 
     def Placement(self, R, delta):
         """
@@ -245,23 +278,22 @@ class DistantRepresentativesRectangles:
         Q = set()
         p = [None] * len(R)
 
+        # Finds all blocker shapes that touch the rectangle.
         blockers = [self.getPlusBlockersInDiscStupid(r, delta, len(R), set()) for r in R]
 
-        # These discs contain no grid points, so their representatives are:
-        # - the centre, if the disc is completely contained within a cell.
-        # - a point on a grid edge, if the disc touches a grid edge.
-        # Q collects all grid points that are within delta distance of the Placement
-        #   of these representatives.
-        # The centres/edge points may be too close to each other, this will be
+        # These rectangles contain no blocker shapes, so their representatives
+        # are the centre.
+        # The centres may be too close to each other, this will be
         # checked later.
         num_small_discs = len(R)
         for i,r in enumerate(R):
 
-            if len(blockers[i]) != 0:
+            if len(blockers[i]) == 0:
                 num_small_discs -= 1
                 cx, cy, w, h = r
                 p[i] = (cx, cy)
 
+                # Adds blockers to Q
                 xmin = math.floor(cx/delta)-2
                 xmax = math.floor(cx/delta)+3
 
@@ -278,7 +310,7 @@ class DistantRepresentativesRectangles:
         #Pi = [set()]*len(D) # now called blockers
 
         # The remaining rectangles:
-        # Find all the grid points within each disc
+        # Find all the blockers within each rectangle, subtract Q.
         for i,d in enumerate(R):
             blockers[i] = blockers[i].difference(Q)
             P = P.union(blockers[i])
