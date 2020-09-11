@@ -1,14 +1,13 @@
 import os, sys
 import math
 from PIL import Image, ImageDraw
-from DistantRepresentatives import LInf
+from DistantRepresentatives import LInf, LOne
 from DistantRepresentativesRectangles import DistantRepresentativesRectangles
 
 R = [(100, 100, 30, 30), (50,50, 20, 20), (100, 150, 3, 3), (30, 150, 3, 3)]
 W, H = 220, 190
 
-#dr = DistantRepresentativesRectangles(LInf)
-#assert (dr is not None)
+dr = DistantRepresentativesRectangles(LOne)
 
 placement = True
 drawGrid = True
@@ -16,10 +15,12 @@ drawGrid = True
 
 if placement:
 
-    delta = 26
+    delta = 10
     assert(delta >= 5)
 
-    #p = dr.Placement(D, delta)
+    p = dr.Placement(R, delta)
+    assert (dr is not None)
+
 
     #if p is None:
     #    exit()
@@ -54,9 +55,11 @@ if placement:
             if (i+j) % 4 == 0 and i % 2 ==0 and j % 2 ==0: # isPlusBlockerCentre in DistantRepresentativesRectangles
                 img1.rectangle([(delta*i-1, H-(delta*(j+1)-1)), (delta*i+1,H-(delta*(j-1)+1))], fill=(0,255,0))
                 img1.rectangle([(delta*(i+1)-1, H-(delta*j-1)), (delta*(i-1)+1,H-(delta*j+1))], fill=(0,255,0))
+                pass
 
-    #for (x,y) in p:
-    #    img1.rectangle([(x-2, h-(y-2)), (x+2,h-(y+2))], fill=(255,255,0))
+    for (x,y) in p:
+        print(x,y)
+        img1.rectangle([(x-2, H-(y-2)), (x+2,H-(y+2))], fill=(255,255,0))
 
     img.show()
 

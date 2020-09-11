@@ -249,10 +249,11 @@ class DistantRepresentativesDiscs:
 
         # Convert grid points to corresponding point in delta sized grid.
         for i in range(n):
-            for j in range(i+1, m):
+            for j in range(m): #TODO is there an approach faster than this?
                 if M[i][j] == 1:
                     p[i] = P[j]
                     p[i] = (delta*p[i][0], delta*p[i][1])
+                    break
 
         if any(x is None for x in p):
             print("Fail: no matching")

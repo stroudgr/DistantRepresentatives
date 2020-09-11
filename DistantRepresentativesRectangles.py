@@ -1,4 +1,6 @@
 from DistantRepresentatives import LInf, LOne, LTwoSquared
+import math
+from Matching import BipartiteGraph
 
 class Rectangle(object):
     """A Rectangle class."""
@@ -142,7 +144,7 @@ class DistantRepresentativesRectangles:
 
         if ((cy - H <= delta*y and cy+H >= delta*y)
             and   ((cx - W >= delta*(x-1) and cx-W <= delta*(x+1))
-                or (cx + W >= delta*(z-1) and cx+W <= delta*(x+1)))):
+                or (cx + W >= delta*(x-1) and cx+W <= delta*(x+1)))):
                 return True
 
         return False
@@ -176,7 +178,8 @@ class DistantRepresentativesRectangles:
         i,j=b
         assert type(i) == int and type(j) == int
 
-        return (i+j) % 4 == 0
+        #return (i+j) % 4 == 0
+        return (i+j) % 4 == 0 and i % 2 == 0 and j % 2 == 0
 
     def isLBlockerCentre(self, b):
         i,j=b
@@ -227,7 +230,7 @@ class DistantRepresentativesRectangles:
         return (delta*(y-1) <= b and b <= delta*(y+1) and abs(delta*x-a) < err)
 
 
-    def plusBlockerAndRectFarApart(r, b, delta, norm):
+    def plusBlockerAndRectFarApart(self, r, b, delta):
         """
         Given rectangle r and plus blocker b, returns false if the blocker
         and rectangle are minimum distance strictly less than delta.
@@ -243,19 +246,48 @@ class DistantRepresentativesRectangles:
         mindist = 100000000000
         for p in rect_corners:
             for q in blocker_points:
-                mindist = min(mindist, norm(p, q))
+                mindist = min(mindist, self.norm(p, q))
                 if self.inRect((q[0],p[1]) , r):
-                    mindist = min(mindist, norm((q[0],p[1]), q))
+                    mindist = min(mindist, self.norm((q[0],p[1]), q))
                 if self.inRect((p[0],q[1]) , r):
-                    mindist = min(mindist, norm((p[0],q[1]), q))
+                    mindist = min(mindist, self.norm((p[0],q[1]), q))
 
                 if self.inPlus(b, (p[0],q[1]), delta):
-                    mindist = min(mindist, norm((p[0],q[1]), p))
+                    mindist = min(mindist, self.norm((p[0],q[1]), p))
 
                 if self.inPlus(b, (q[0],p[1]), delta):
-                    mindist = min(mindist, norm((p[0],q[1]), p))
+                    mindist = min(mindist, self.norm((p[0],q[1]), p))
 
         return mindist >= delta
+
+    def findRectAndPlusIntersectionPoint(self, r, b, delta,err=0.001):
+        x,y=b
+        cx,cy,w,h=r
+
+        # if being true means (at least one of the top/bottom edges touch the vertical part):
+        #               |
+        #          _____|______
+        #               |
+        #            ---|----
+        #           |        |
+        #            --------
+        if (cx-w <= delta*x and delta*x <= cx+w):
+            if delta*(y-1)<= cy+h and cy+h <= delta*(y+1):
+                return (delta*x, cy+h)
+            elif delta*(y-1)<= cy-h and cy-h <= delta*(y+1):
+                return (delta*x, cy-h)
+            else:
+                return None
+
+        if (cy-h <= delta*y and delta*y <= cy+h):
+            if delta*(x-1)<= cx+w and cx+w <= delta*(x+1):
+                return (cx+w, delta*y)
+            elif delta*(x-1)<= cx-w and cx-w <= delta*(x+1):
+                return (cy-w, delta*x)
+            else:
+                return None
+        return None
+        # cannot touch otherwise!
 
     def Placement(self, R, delta):
         """
@@ -302,8 +334,8 @@ class DistantRepresentativesRectangles:
 
                 for x in range(xmin, xmax+1):
                     for y in range(ymin, ymax+1):
-                        if isPlusBlockerCentre(x,y):
-                            if not self.plusBlockerAndRectFar(r, (x,y), delta):
+                        if self.isPlusBlockerCentre((x,y)):
+                            if not self.plusBlockerAndRectFarApart(r, (x,y), delta):
                                 Q = Q.union({(x,y)})
 
         P = set()
@@ -323,12 +355,13 @@ class DistantRepresentativesRectangles:
 
         n = len(R)
         m = len(P)
+        print(n,m)
 
         # Create a bipartite graph between all the discs (L) and all the grid points (R)
         # within the discs. Add an edge between a disc and a grid point iff the grid
         # point is in that disc.
         G = BipartiteGraph(n, m)
-        for i,d in enumerate(D):
+        for i,d in enumerate(R):
             for x in blockers[i]:
                 G.addEdge(i, P_index[x])
 
@@ -336,39 +369,40 @@ class DistantRepresentativesRectangles:
         #  is matched.
         M = G.matching()
         if M is None:
-            print("FAIL: no matching")
+            print("1. FAIL: no matching")
             return None
 
+        print(M)
         numMatchingEdges = sum([sum(x) for x in M])
 
+        print(numMatchingEdges, num_small_discs, n)
         # Assert all discs get matched to a grid point.
         if numMatchingEdges < n - num_small_discs:
-            print("FAIL: no matching")
+            print("2. FAIL: no matching")
             return None
 
         # Convert grid points to corresponding point in delta sized grid.
         for i in range(n):
-            for j in range(i+1, m):
+            for j in range(m):
                 if M[i][j] == 1:
 
                     # TODO
-                    #p[i] = findIntersectionPoint()
-
-                    p[i] = P[j]
-                    p[i] = (delta*p[i][0], delta*p[i][1])
+                    #p[i]=(delta*P[j][0], delta*P[j][1])
+                    p[i] = self.findRectAndPlusIntersectionPoint(R[i], P[j], delta)
+                    assert p[i] is not None
+                    break
 
         if any(x is None for x in p):
-            print("Fail: no matching")
+            print("3. Fail: no matching")
             return None
 
         # Ensure all points are >= delta distance apart.
         for i in range(n):
-            for j in range(n):
-                if i !=j:
-                    dist = LInf(p[0], p[1])
-                    if dist < delta:
-                        print("FAIL: points are not far apart")
-                        return p
+            for j in range(i+1, n):
+                dist = self.norm(p[i], p[j])
+                if dist < delta:
+                    print("FAIL: points are not far apart")
+                    return p
         print("SUCCESS")
         return p
 

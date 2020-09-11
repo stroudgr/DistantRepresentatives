@@ -21,6 +21,16 @@ class BipartiteGraph:
         self.n = n
         self.m = m
 
+    def __str__(self):
+        graph_string=""
+        for i in range(self.n):
+            l=[]
+            for j in range(self.m):
+                if self.matrix[i][j] == 1:
+                    l.append(j)
+            graph_string=graph_string+str(l)+"\n"
+        return graph_string
+
     def degreeLeft(self, x):
         return sum(self.matrix[x])
 
@@ -28,9 +38,6 @@ class BipartiteGraph:
         self.matrix[a][b] = 1
 
     def matching(self):
-
-        if self.n > self.m:
-            return None
 
         M = [[0]*self.m for i in range(self.n)]
         p = self.augmentingPath(M)
