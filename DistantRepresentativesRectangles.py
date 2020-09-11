@@ -406,7 +406,111 @@ class DistantRepresentativesRectangles:
         print("SUCCESS")
         return p
 
-    def getDistantRepresentatives(self, D):
+    def getDistantRepresentatives(self, R):
+        """
+        Given a set of rects R, tries to find a placement of representatives points
+        in each disc so that all points are as far apart as possible.
+
+        This algorithm will succeed at finding points that are >= _ delta* apart,
+        where delta* is the distance between the closest pair of points in the
+        optimal solution. In other words, this returns a 2-Approximation.
+        """
+
+        assert(len(R) >=  1)
+        if len(R) == 1:
+            return [R[0], R[1]]
+
+        n = len(R)
+
+        # Let's just assume the input is always integer
+        #self.convertToInteger(R)
+
+        D = max(max(abs(r[0]+r[2]), abs(r[0]-r[2]), abs(r[1]+r[3]), abs(r[1]-r[3])) for r in R)
+
+        lb = 1/n
+        ub = 2*D
+        p_success = self.Placement(R, 1/n) # make sure this works!
+
+        if p_success is None:
+            print("TODO: return a solution when delta=1/n")
+            raise NotImplementedError
+
+        while lb-ub > 1/ (n*n*D):
+            delta = (lb+ub)/2
+            p = self.Placement(R, delta)
+            if p is None:
+                ub = delta
+            else:
+                lb = delta
+                p_success=p
+
+        # Critical delta values
+        deltas = set()
+
+        for i in range(n):
+            for j in range(i+1, n):
+                c1 = p[i][0], p[i][1]
+                c2 = p[j][0], p[j][1]
+
+                deltas = deltas.union({self.norm(c1, c2)})
+
+        C=2 #TODO !!!!!
+
+        for r in R:
+            cx,cy,w,h = r
+
+            for e in [cx-w, cx+w, cy-h, cy+h]:
+                smallest = math.floor((e-lb)/(t*2))
+                largest = math.ceil((e+lb)/(t))
+                for j in range(smallest, largest+1):
+                    if j!=0:
+                        deltas = deltas.union(abs(e / (C*j)))
+
+        deltas = list(deltas)
+        deltas.sort()
+
+        p = self.Placement(R, deltas[0])
+        if p is None:
+            return p_success
+
+        p_success = p
+
+        L = len(deltas)
+        assert(L >= 2)
+
+        p = self.Placement(R, deltas[L-1])
+        if p is not None:
+            return p
+
+        l = 0
+        u = L-1
+
+        i = (u+l) // 2
+
+        print("L = ", L)
+
+        # Perform a binary Search
+        # Find delta_i where Placement(delta_i /2) succeeds but
+        #  Placement(delta_{i+1} /2) fails. The solution for delta_i/2 is a
+        #   2-Approximation.
+
+        while i >= l and i <= u and not (u - l <= 1):
+
+            p = self.Placement(R, deltas[i])
+
+            if p is not None:
+                p_success = p
+                l = i
+            else:
+                u = i
+            i = (u+l) // 2
+
+        return p_success #self.Placement(R, deltas[l])
+
+
+
+
+    def getDistantRepresentativesLINF(self, D):
         """
         Given a set of discs D, tries to find a placement of representatives points
         in each disc so that all points are as far apart as possible.
