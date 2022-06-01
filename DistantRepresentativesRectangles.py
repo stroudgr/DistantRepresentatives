@@ -134,7 +134,7 @@ class DistantRepresentativesRectangles:
 
     def plusBlockerIntersectsRect(self, r, b, delta):
         x,y = b
-        l = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
+        l = [(delta*x, delta*y), (delta*(x+1), delta*y), (delta*(x-1), delta*y), (delta*x,delta*(y+1)), (delta*x,delta*(y-1))]
         if any(self.inRect(z, r)  for z in l):
             return True
 
@@ -208,9 +208,9 @@ class DistantRepresentativesRectangles:
                 if (i, j) not in Q and self.plusBlockerIntersectsRect(r, (i, j), delta):
                     S = S.union({(i, j)})
 
-                    # THIS is probably a bad idea!
-                    #if len(S) >= n:
-                    #    return S
+                    # THIS is probably a bad idea! why?
+                    if len(S) >= n:
+                        return S
 
         return S
 
@@ -271,21 +271,25 @@ class DistantRepresentativesRectangles:
         #            ---|----
         #           |        |
         #            --------
+
+        # If vertical bar of plus shape lies between left/right boundaries of rect. 
         if (cx-w <= delta*x and delta*x <= cx+w):
-            if delta*(y-1)<= cy+h and cy+h <= delta*(y+1):
+            if delta*(y-1)<= cy+h and cy+h <= delta*(y+1): # touches top boundary?
                 return (delta*x, cy+h)
-            elif delta*(y-1)<= cy-h and cy-h <= delta*(y+1):
+            elif delta*(y-1)<= cy-h and cy-h <= delta*(y+1): # touches bottom boundary?
                 return (delta*x, cy-h)
-            else:
-                return None
+            elif (cy-h <= delta*(y-1) and delta*(y+1) <= cy+h): # in-between top and bottom boundary. Can choose any point. 
+                return (delta*x, delta*y)
+
+        # Symmetric to above case
 
         if (cy-h <= delta*y and delta*y <= cy+h):
             if delta*(x-1)<= cx+w and cx+w <= delta*(x+1):
                 return (cx+w, delta*y)
             elif delta*(x-1)<= cx-w and cx-w <= delta*(x+1):
-                return (cy-w, delta*x)
-            else:
-                return None
+                return (cx-w, delta*y)
+            elif (cx-w <= delta*(x-1) and delta*(x+1) <= cx+w): 
+                return (delta*x, delta*y)
         return None
         # cannot touch otherwise!
 
@@ -355,7 +359,6 @@ class DistantRepresentativesRectangles:
 
         n = len(R)
         m = len(P)
-        print(n,m)
 
         # Create a bipartite graph between all the discs (L) and all the grid points (R)
         # within the discs. Add an edge between a disc and a grid point iff the grid
@@ -372,10 +375,9 @@ class DistantRepresentativesRectangles:
             print("1. FAIL: no matching")
             return None
 
-        print(M)
+        #print(M)
         numMatchingEdges = sum([sum(x) for x in M])
 
-        print(numMatchingEdges, num_small_discs, n)
         # Assert all discs get matched to a grid point.
         if numMatchingEdges < n - num_small_discs:
             print("2. FAIL: no matching")
@@ -384,12 +386,19 @@ class DistantRepresentativesRectangles:
         # Convert grid points to corresponding point in delta sized grid.
         for i in range(n):
             for j in range(m):
-                if M[i][j] == 1:
+                #TODO 
+                if M[i][j] == 1:# and i == 1 and j == 1:
 
                     # TODO
                     #p[i]=(delta*P[j][0], delta*P[j][1])
                     p[i] = self.findRectAndPlusIntersectionPoint(R[i], P[j], delta)
-                    assert p[i] is not None
+                    #assert p[i] is not None
+
+                    # i = 1, j = 1
+
+                    if p[i] is None:
+                        raise NotImplementedError
+
                     break
 
         if any(x is None for x in p):
@@ -411,9 +420,9 @@ class DistantRepresentativesRectangles:
         Given a set of rects R, tries to find a placement of representatives points
         in each disc so that all points are as far apart as possible.
 
-        This algorithm will succeed at finding points that are >= _ delta* apart,
+        This algorithm will succeed at finding points that are >= c delta* apart,
         where delta* is the distance between the closest pair of points in the
-        optimal solution. In other words, this returns a 2-Approximation.
+        optimal solution. In other words, this returns a c-Approximation. c depends on the norm.
         """
 
         assert(len(R) >=  1)
@@ -429,84 +438,28 @@ class DistantRepresentativesRectangles:
 
         lb = 1/n
         ub = 2*D
-        p_success = self.Placement(R, 1/n) # make sure this works!
+        delta = 1/n
+        p_success = self.Placement(R, 1/n)
+
+
+        print("*********************************", 2*D, " ", 1/n)
 
         if p_success is None:
             print("TODO: return a solution when delta=1/n")
             raise NotImplementedError
 
-        while lb-ub > 1/ (n*n*D):
+        while ub-lb > 1/ (n*n*D):
             delta = (lb+ub)/2
             p = self.Placement(R, delta)
             if p is None:
+                print(delta , " fails")
                 ub = delta
             else:
+                print(delta, "succeeds")
                 lb = delta
                 p_success=p
 
-        # Critical delta values
-        deltas = set()
-
-        for i in range(n):
-            for j in range(i+1, n):
-                c1 = p[i][0], p[i][1]
-                c2 = p[j][0], p[j][1]
-
-                deltas = deltas.union({self.norm(c1, c2)})
-
-        C=2 #TODO !!!!!
-
-        for r in R:
-            cx,cy,w,h = r
-
-            for e in [cx-w, cx+w, cy-h, cy+h]:
-                smallest = math.floor((e-lb)/(t*2))
-                largest = math.ceil((e+lb)/(t))
-                for j in range(smallest, largest+1):
-                    if j!=0:
-                        deltas = deltas.union(abs(e / (C*j)))
-
-        deltas = list(deltas)
-        deltas.sort()
-
-        p = self.Placement(R, deltas[0])
-        if p is None:
-            return p_success
-
-        p_success = p
-
-        L = len(deltas)
-        assert(L >= 2)
-
-        p = self.Placement(R, deltas[L-1])
-        if p is not None:
-            return p
-
-        l = 0
-        u = L-1
-
-        i = (u+l) // 2
-
-        print("L = ", L)
-
-        # Perform a binary Search
-        # Find delta_i where Placement(delta_i /2) succeeds but
-        #  Placement(delta_{i+1} /2) fails. The solution for delta_i/2 is a
-        #   2-Approximation.
-
-        while i >= l and i <= u and not (u - l <= 1):
-
-            p = self.Placement(R, deltas[i])
-
-            if p is not None:
-                p_success = p
-                l = i
-            else:
-                u = i
-            i = (u+l) // 2
-
-        return p_success #self.Placement(R, deltas[l])
-
+        return delta, p_success
 
 
 
@@ -519,7 +472,7 @@ class DistantRepresentativesRectangles:
         where delta* is the distance between the closest pair of points in the
         optimal solution. In other words, this returns a 2-Approximation.
         """
-
+        raise NotImplementedError
         assert(len(D) >=  1)
         if len(D) == 1:
             pass
@@ -564,8 +517,6 @@ class DistantRepresentativesRectangles:
         u = L-1
 
         i = (u+l) // 2
-
-        print("L = ", L)
 
         # Perform a binary Search
         # Find delta_i where Placement(delta_i /2) succeeds but

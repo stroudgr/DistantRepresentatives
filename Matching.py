@@ -14,12 +14,14 @@ class _Node:
         self.adj = []
 
 class BipartiteGraph:
-
+    """
+    An undirected bipartite graph class.
+    """
     def __init__(self, n, m):
 
         self.matrix = [[0]*m for i in range(n)]
-        self.n = n
-        self.m = m
+        self.n = n # left size
+        self.m = m # right size
 
     def __str__(self):
         graph_string=""
@@ -36,9 +38,11 @@ class BipartiteGraph:
 
     def addEdge(self, a, b):
         self.matrix[a][b] = 1
+        # TODO: not bothering with symmetry?
 
     def matching(self):
 
+        # Adjacency matrix representing the matching.
         M = [[0]*self.m for i in range(self.n)]
         p = self.augmentingPath(M)
         #assert False
@@ -67,21 +71,52 @@ class BipartiteGraph:
         return M_new
 
     def augmentingPath(self, M):
-        dL = [None]*self.n
-        dR = [None]*self.m
+        """
+        Returns an augmenting path in this bipartite graph given matching M.
 
-        colorL = [0]*self.n
-        colorR = [0]*self.m
+        An augmenting path is an odd length path of the graph starting from the left side to the right side of the graph,
+        so that the start and end vertices of the path are unmatched in M
+        and every L->R edge doesn't belong to M
+        and every R->L edge does belong to M
 
-        parL = [None]*self.n
-        parR = [None]*self.m
+        Eg. A -> 2 -> B -> 3, where --- are edges not in M, === are in M.
+
+        A --------- 1                                 A  -------------- 1
+            -                                            ===
+              -                                             ===
+                -                                               ===
+                  - 2          "flip this path"                    ===  2
+                ===                                                 -
+             ===                                               -
+          ===                                               -
+        B  --------- 3                                B  =============  3
 
 
+
+        """
+        
+
+
+        # Perform dfs starting from any unmatched vertex of left side. 
         for k in range(self.n):
-            if colorL[k] == 0:
-
+            # Check if k is unmatched.
+            if not any(M[k]):
+                
+                # Start dfs from k
                 stack = [(k, True)]
-                dL[k] = 0
+
+                #dL = [None]*self.n
+                #dR = [None]*self.m
+
+                # Determines whether node has been discovered yet during dfs.
+                colorL = [0]*self.n
+                colorR = [0]*self.m
+
+                # parent of each node in dfs tree.
+                parL = [None]*self.n
+                parR = [None]*self.m
+
+                #dL[k] = 0
                 colorL[k] = 1
 
                 while len(stack) != 0:

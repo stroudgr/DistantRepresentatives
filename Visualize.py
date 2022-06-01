@@ -5,7 +5,7 @@ from DistantRepresentatives import LInf
 from DistantRepresentativesDiscs import DistantRepresentativesDiscs
 
 D = [(100, 100, 30), (50,50, 20), (100, 150, 3), (30, 150, 3)]
-w, h = 220, 190
+w, h = 1000, 700
 
 dr = DistantRepresentativesDiscs(LInf)
 assert (dr is not None)
@@ -50,7 +50,7 @@ if placement:
                 img1.rectangle([(delta*i-1, h-(delta*j-1)), (delta*i+1,h-(delta*j+1))], fill=(0,255,0))
 
     for (x,y) in p:
-        img1.rectangle([(x-2, h-(y-2)), (x+2,h-(y+2))], fill=(255,255,0))
+        img1.rectangle([(x-2, h-(y-2)), (x+2,h-(y+2))], fill=(0,0,255))
 
     img.show()
 
