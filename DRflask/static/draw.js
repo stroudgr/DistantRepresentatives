@@ -140,13 +140,13 @@ function removeReps(){
 
 function addPointsToDrawing(data) {
 
-  document.getElementById("blah").innerHTML = "\u03B4 = " + data["delta"];
+  document.getElementById("blah").innerHTML = "&delta;* = " + data["delta"];
 
   let pointsRadius = 10;
-  console.log("adding points....");
+  //console.log("adding points....");
   for (var i = 0; i < data["p"].length; i++) {
 
-    console.log(data["p"][i]);
+    //console.log(data["p"][i]);
 
     var circle = new fabric.Circle({
       radius: pointsRadius, fill: 'green', left: data["p"][i][0]-pointsRadius, top: data["p"][i][1]-pointsRadius,
@@ -160,7 +160,7 @@ function addPointsToDrawing(data) {
     //});
 
     canvas.add(circle);
-    console.log(circle);
+    //console.log(circle);
     points.push(circle);
   }
 
@@ -188,10 +188,10 @@ function computeDistantReps() {
   console.log("Sending ", jobj);
 
   postData("http://127.0.0.1:5000/listening", jobj).then(data=> {
-    //document.getElementById("blah").innerHTML = "\u03B4 = " + data["098"];
+    //document.getElementById("blah").innerHTML = "&delta;* = " + data["098"];
     console.log(data);
     addPointsToDrawing(data);
-    //document.getElementById("blah").innerHTML = "\u03B4 = " + data["delta"];
+    //document.getElementById("blah").innerHTML = "&delta;* = " + data["delta"];
 
   }).catch(function (error) {
     console.log(error);
