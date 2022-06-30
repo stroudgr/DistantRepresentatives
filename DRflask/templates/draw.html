@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Distant Representatives</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+</head>
+
+<body>
+
+  {% block content %} {% endblock %}
+
+<script src="https://unpkg.com/fabric@5.2.1/dist/fabric.min.js"></script>
+<script src="{{ url_for('static', filename='draw.js') }}"></script>
+</body>
+</html>
+
+
+       

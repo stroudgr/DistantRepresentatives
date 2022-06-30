@@ -1,0 +1,21 @@
+{% extends 'draw.html' %}
+
+{% block content %}
+<div class="canvas-wrapper">
+    <canvas id="canvas" width="800" height="500"></canvas>
+</div>
+  
+<br><br>
+
+<div>
+  <button onclick="addRectangle()"> Add Rectangle </button>
+
+  <button onclick="computeDistantReps()"> Compute Distant Representatives </button>
+
+</div>
+
+<br><br>
+<div>
+  <h1 id="blah"> Init </h1>
+</div>
+{% endblock %}

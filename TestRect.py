@@ -4,8 +4,9 @@ from PIL import Image, ImageDraw
 from DistantRepresentatives import LInf, LOne
 from DistantRepresentativesRectangles import DistantRepresentativesRectangles
 
-R = [(100, 100, 30, 30), (50,50, 20, 20), (100, 150, 3, 3), (30, 150, 3, 3)]
-W, H = 300, 300
+#R = [(100, 100, 30, 30), (50,50, 20, 20), (100, 150, 3, 3), (30, 150, 3, 3)]
+R = [(150, 135, 100, 70), (428, 363, 100, 70), (582, 195, 100, 70)]
+W, H = 1000, 1000
 
 norm = LOne
 dr = DistantRepresentativesRectangles(norm)
@@ -79,6 +80,8 @@ else:
     delta = DELTA_RET
 
     print("Optimal delta = ", delta)
+
+    print("Optimal p =", p)
 
     # creating new Image object
     img = Image.new("RGB", (W, H))

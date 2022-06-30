@@ -425,9 +425,11 @@ class DistantRepresentativesRectangles:
         optimal solution. In other words, this returns a c-Approximation. c depends on the norm.
         """
 
-        assert(len(R) >=  1)
+        if (len(R) <= 0):
+            return -1, []
+        
         if len(R) == 1:
-            return [R[0], R[1]]
+            return -1, [(R[0][0], R[0][1])]
 
         n = len(R)
 
@@ -452,10 +454,10 @@ class DistantRepresentativesRectangles:
             delta = (lb+ub)/2
             p = self.Placement(R, delta)
             if p is None:
-                print(delta , " fails")
+                #print(delta , " fails")
                 ub = delta
             else:
-                print(delta, "succeeds")
+                #print(delta, "succeeds")
                 lb = delta
                 p_success=p
 

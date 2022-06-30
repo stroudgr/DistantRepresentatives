@@ -7,8 +7,9 @@ from DistantRepresentativesRectangles import DistantRepresentativesRectangles
 
 import argparse
 
-R = [(100, 100, 30, 30), (50,50, 20, 20), (100, 150, 3, 3), (30, 150, 3, 3)]
-W, H = 300, 300
+#R = [(100, 100, 30, 30), (50,50, 20, 20), (100, 150, 3, 3), (30, 150, 3, 3)]
+R = [(150, 135, 100, 70), (428, 363, 100, 70), (582, 195, 100, 70)]
+W, H = 600, 600
 
 norm = LOne
 dr = DistantRepresentativesRectangles(norm)
