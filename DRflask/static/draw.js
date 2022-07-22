@@ -187,7 +187,7 @@ function computeDistantReps() {
 
   console.log("Sending ", jobj);
 
-  postData("http://127.0.0.1/listening", jobj).then(data=> {
+  postData("https://127.0.0.1:5000/listening", jobj).then(data=> {
     //document.getElementById("blah").innerHTML = "&delta;* = " + data["098"];
     console.log(data);
     addPointsToDrawing(data);
