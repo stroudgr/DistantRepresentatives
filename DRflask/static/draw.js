@@ -170,7 +170,7 @@ function addPointsToDrawing(data) {
 
 
 
-function computeDistantReps() {
+function computeDistantReps(computation_url="/listening") {
   removeReps();
   var sendIt = [];
   for (var i=0; i < rects.length; i++) {
@@ -187,7 +187,8 @@ function computeDistantReps() {
 
   console.log("Sending ", jobj);
 
-  postData("https://127.0.0.1/listening", jobj).then(data=> {
+  postData(computation_url, jobj).then(data=> {
+  //postData("https://127.0.0.1/listening", jobj).then(data=> {
     //document.getElementById("blah").innerHTML = "&delta;* = " + data["098"];
     console.log(data);
     addPointsToDrawing(data);

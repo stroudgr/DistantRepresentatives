@@ -10,7 +10,9 @@
 <div>
   <button onclick="addRectangle()"> Add Rectangle </button>
 
-  <button onclick="computeDistantReps()"> Compute Distant Representatives </button>
+  <!--button onclick="computeDistantRepsClosure()"> Compute Distant Representatives </button-->
+
+  <button onclick="computeDistantReps('{{ url_for("computeReps") }}')"> Compute Distant Representatives </button>
 
 </div>
 
