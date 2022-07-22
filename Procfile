@@ -1,1 +1,1 @@
-web: gunicorn 'DRflask:create-app()'
+web: gunicorn DRflask:create_app()
