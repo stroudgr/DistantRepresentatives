@@ -17,13 +17,22 @@ def create_app():
     @app.route("/listening", methods=("POST","GET"))
     def computeReps():
 
-        if request.method == "POST":
+        if request.method == "POST" or request.method == "GET":
             
             rects = literal_eval(request.json["rects"])
             dr = DistantRepresentativesRectangles(LOne)
             delta, p = dr.getDistantRepresentatives(rects)
 
             return {"p": p, "delta": delta }
+
+
+    @app.route("/getting/<name>", methods=("GET",))
+    def getReps(name):
+        rects = literal_eval(name)
+        dr = DistantRepresentativesRectangles(LOne)
+        delta, p = dr.getDistantRepresentatives(rects)
+
+        return {"p": p, "delta": delta }
 
 
     @app.route('/', methods=('GET',))

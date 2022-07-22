@@ -187,7 +187,7 @@ function computeDistantReps(computation_url="/listening") {
 
   console.log("Sending ", jobj);
 
-  postData(computation_url, jobj).then(data=> {
+  /*postData(computation_url, jobj).then(data=> {
   //postData("https://127.0.0.1/listening", jobj).then(data=> {
     //document.getElementById("blah").innerHTML = "&delta;* = " + data["098"];
     console.log(data);
@@ -198,6 +198,26 @@ function computeDistantReps(computation_url="/listening") {
     console.log(error);
   });;
 
+  */
+
+  console.log(computation_url + "/" + JSON.stringify(sendIt) );
+  //return;
+
+  getResult(computation_url + "/" + JSON.stringify(sendIt)).then(data=> {
+    //document.getElementById("blah").innerHTML = "&delta;* = " + data["098"];
+    console.log(data);
+    addPointsToDrawing(data);
+    //document.getElementById("blah").innerHTML = "&delta;* = " + data["delta"];
+
+  }).catch(function (error) {
+    console.log(error);
+  });;
+
+}
+
+async function getResult(url='') {
+  const response = await fetch(url);
+  return response.json();
 }
 
 

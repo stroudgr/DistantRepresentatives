@@ -12,7 +12,10 @@
 
   <!--button onclick="computeDistantRepsClosure()"> Compute Distant Representatives </button-->
 
-  <button onclick="computeDistantReps('{{ url_for("computeReps") }}')"> Compute Distant Representatives </button>
+  <!--button onclick="computeDistantReps('{{ url_for("computeReps") }}')"> Compute Distant Representatives </button-->
+
+  <button onclick="computeDistantReps('{{ url_for("getReps", name="") }}')"> Compute Distant Representatives </button>
+
 
 </div>
 
