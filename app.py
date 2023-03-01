@@ -40,3 +40,5 @@ def create_app():
         return render_template("distantreps.html")
 
     return app
+
+app = create_app()
