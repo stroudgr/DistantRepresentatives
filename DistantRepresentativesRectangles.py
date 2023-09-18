@@ -321,11 +321,11 @@ class DistantRepresentativesRectangles:
         # are the centre.
         # The centres may be too close to each other, this will be
         # checked later.
-        num_small_discs = len(R)
+        num_small_discs = 0#len(R)
         for i,r in enumerate(R):
 
             if len(blockers[i]) == 0:
-                num_small_discs -= 1
+                num_small_discs += 1#-= 1
                 cx, cy, w, h = r
                 p[i] = (cx, cy)
 
