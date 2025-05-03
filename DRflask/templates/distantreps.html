@@ -22,5 +22,35 @@
 <br><br>
 <div>
   <h1 id="blah"> &delta;* = </h1>
+
+  <p>
+    In the distant representatives problem, given input shapes in the plane, the goal is to place one point in each shape so that the points are as far apart from each other as possible.
+  </p>
+
+  <ol>
+    <li>Click the "Add Rectangle" button to create some rectangles. Note that rectangles
+      are always placed in the same initial location. </li>
+    <li>
+      Drag or resize them to any position or size that you like.</li>
+    <li> (One small issue: deselect the currently selected rectangle by anywhere except the rectangle (e.g. click somewhere on the grid). Otherwise,
+      the solution might appear behind the rectangle).
+    </li>
+    <li>
+    Click the "Compute Distant Representatives" button. A point will be placed on each rectangle, and the value of the distance δ* between the closest pair of points is computed.</li>
+  </li>
+  </ol> 
+    
+    
+    
+    δ* is maximized as much as possible, however, the problem is NP-hard. The signifigance of this project is that the value returned always within a constant factor of the true optimal value.
+    
+    <p>
+    Link to paper: <a href="https://drops.dagstuhl.de/storage/00lipics/lipics-vol204-esa2021/LIPIcs.ESA.2021.17/LIPIcs.ESA.2021.17.pdf">European Symposium on Algorithms 2021</a>
+  </p>
+  <p>
+    Source code: <a href="https://github.com/stroudgr/DistantRepresentatives/tree/master">Github</a>
+  </p>
+
+
 </div>
 {% endblock %}

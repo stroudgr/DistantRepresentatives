@@ -2,7 +2,7 @@ import os, sys
 import math
 from PIL import Image, ImageDraw
 from DistantRepresentatives import LInf
-from DistantRepresentativesDiscs import DistantRepresentativesDiscs
+from Extra.DistantRepresentativesDiscs import DistantRepresentativesDiscs
 
 D = [(100, 100, 30), (50,50, 20), (100, 150, 3), (30, 150, 3)]
 w, h = 1000, 700

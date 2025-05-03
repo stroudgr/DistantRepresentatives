@@ -1,17 +1,3 @@
-import math
-
-class Disc:
-    def __init__(self, cx, cy, r, inf=True):
-        self.cx = cx
-        self.cy = cy
-        self.r = r
-        self.inf = True
-
-class _Node:
-
-    def __init__(self, value):
-        self.value = value
-        self.adj = []
 
 class BipartiteGraph:
     """
@@ -41,21 +27,25 @@ class BipartiteGraph:
         # TODO: not bothering with symmetry?
 
     def matching(self):
-
+        """
+        Returns a maximal matching for this graph.
+        """
         # Adjacency matrix representing the matching.
+        # Starts as empty
         M = [[0]*self.m for i in range(self.n)]
         p = self.augmentingPath(M)
-        #assert False
+        
         while p is not None:
             M = self.updateMatching(p, M)
             p = self.augmentingPath(M)
         return M
 
     def updateMatching(self, p, M):
+        """
+        Given an augmenting path p from M, computes a strictly better matching.
+        """
         M_new = M.copy()
-        # len(p) is even
-        #print("len", len(p)//2 - 1)
-
+        
         for i in range(len(p)//2 - 1):
             x = p[2*i]
             y = p[2*i+1]
@@ -67,7 +57,7 @@ class BipartiteGraph:
         x = p[len(p)-2]
         y = p[len(p)-1]
         M_new[x][y] = 1
-        #print("...")
+        
         return M_new
 
     def augmentingPath(self, M):
@@ -125,7 +115,6 @@ class BipartiteGraph:
                     if left:
                         for i in range(self.m):
                             if self.matrix[x][i] and not M[x][i] and colorR[i] == 0:
-                                #print("neigh", x, "->", i)
                                 colorR[i] = 1
                                 stack.append((i, False))
                                 parR[i] = x
@@ -135,7 +124,6 @@ class BipartiteGraph:
                         endPath = True
                         for i in range(self.n):
                             if self.matrix[i][x] and M[i][x] and colorL[i] == 0:
-                                #print("neigh", x, "->", i)
                                 colorL[i] = 1
                                 stack.append((i, True))
                                 parL[i] = x
@@ -144,7 +132,6 @@ class BipartiteGraph:
                                 endPath = False
 
                         if endPath:
-                            #print("A", k, x)
                             p = [x]
                             x = parR[x]
                             p.append(x)
@@ -154,39 +141,22 @@ class BipartiteGraph:
                                 x = parR[x]
                                 p.append(x)
                             p.reverse()
-                            #print(p)
-                            #print()
                             return p
 
                         colorR[x] = 2
-            #else:
-            #    print("no using k = ", k)
         return None
 
 
 def hitsEdge(d, delta):
     pass
 
-def small(d, delta):
-    cx, cy, r = d
-
-    # bottom left of square/disc
-    bl = (cx-r, cy-r)
-    # top right
-    tr = (cx+r, cy+r)
-
-    # grid element that is left and below of bl
-    blg = (delta*math.floor(bl[0]/delta), delta*math.floor(bl[1]/delta))
-
-    return blg[0] < bl[0] and blg[1] < bl[1] and tr[0] < blg[0] + delta and tr[1] < blg[1] + delta
-
-
 
 def printBinMatrix(M):
     for x in M:
         print(x)
 
-# test
+
+# Test
 """
 b = BipartiteGraph(3, 5)
 b.addEdge(0, 1)

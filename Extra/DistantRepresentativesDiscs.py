@@ -137,7 +137,7 @@ class DistantRepresentativesDiscs:
         return cx - R  <= x and x <= cx + R and cy- R  <= y and y <= cy + R
 
 
-    def getGridPointsInDiscStupid(self, d, delta, Q):
+    def getGridPointsInDiscBrute(self, d, delta, Q):
         """In a brute force fashion, finds all grid points within the disc,
         excluding elements of Q."""
         cx, cy, R = d
@@ -210,7 +210,7 @@ class DistantRepresentativesDiscs:
         # Find all the grid points within each disc
         for i,d in enumerate(D):
             if contains_point_bools[i][0] == 0:
-                Pi[i] = self.getGridPointsInDiscStupid(d, delta, Q)
+                Pi[i] = self.getGridPointsInDiscBrute(d, delta, Q)
                 P = P.union(Pi[i])
 
         # Enumerate all the grid points.

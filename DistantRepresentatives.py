@@ -12,6 +12,12 @@ def LOne(a,b):
 def LTwoSquared(a,b):
     return (a[0]-b[0])**2 + (a[1]-b[1])**2
 
+
+
+# Inheritance for the problem based off of the norm
+# that did not get implemented.
+
+"""
 def getDistanceRepresentatives(O, norm=LInf):
     if type(O) == Discs:
         return DistantRepresentativesDiscs().getDistanceRepresentatives(O, norm)
@@ -31,3 +37,4 @@ class DistantRepresentatives(object):
 
     def getDistanceRepresentatives(O, norm=LInf):
         pass
+"""

@@ -18,121 +18,22 @@ class DistantRepresentativesRectangles:
     def __init__(self, norm):
         self.norm = norm
 
-    #TODO BLOCKERS!!!!
-    def contains_point(self, d, delta):
-
-        raise NotImplementedError
-
-        """
-        For the given rectangle d, returns whether grid delta*LAMBDA intersects d
-        (as defined in 'Cabello's Approximation Algorithms for Spreading Points',
-        LAMBDA is a unit grid, and delta*LAMBDA is the grid with point spread out
-        delta apart, i.e. { delta*p : p in LAMBDA }). Can think of p as 'moving
-        through time' as we increase/decrease delta.
-
-        Returns:
-        (0,None) - If d contains a grid point. Such point is not needed now, so None
-                    is returned along with indicator 0.
-        (1,p, Q) - If d hits a grid edge. p is a point that intersects d and the
-                    grid edge. Q containts the two grid points that make this grid
-                    edge.
-        (2, p, Q) - Othwerwise, meaning d is contained within a grid cell.
-                    p is the center of disc, and Q consists of the 4 corners of the
-                    grid cell.
-
-        For Q above, since they are grid points, they return the points in grid
-        LAMBDA, as opposed to delta*LAMBDA, which is the relevant grid (this ensures
-        the points are integer points, saving the need to convert to the
-        delta*LAMBDA grid until later. This helps avoid any arithmetic errors).
-
-        We do not this for p, because it is part of the disc, and not a grid point.
-        Discs are fixed size, grids are not.
-        """
-
-        cx, cy, W, H = d
-
-        # Outside the square/disc, or touching the edge
-        verticalGridLineLeft = math.floor((cx-W) / delta)
-        verticalGridLineRight = math.ceil((cx+W) / delta)
-
-        # Outside the square/disc, or touching the edge
-        horizontalGridLineBelow = math.floor((cy-H) / delta)
-        horizontalGridLineAbove = math.ceil((cy+H) / delta)
-
-        # touching the edge case vertically
-        if (cx-W) % delta == 0 or (cx+W) % delta == 0:
-
-            # touching the edge case horizontally
-            if (cy-H) % delta == 0 or (cy+H) % delta == 0:
-                return (0,None) # corner of the square is a grid point
-
-            # Both outside the square/disc, and at least one horizontal line
-            # exists in between.
-            if not(horizontalGridLineBelow + 1 < horizontalGridLineAbove):
-                return (0, None) # One of the vertical edges has a grid point
-
-            # Hits grid edge, but had no grid points inside
-            if (cx-W) % delta == 0:
-                return (1, (cx-W, cy+H),
-                        [(d[0]-d[2], horizontalGridLineBelow),
-                         (d[0]-d[2], horizontalGridLineBelow + 1)]  )
-            else:    #if(d[1]+d[2]) % delta == 0:
-                return (1, (d[0]+d[2], d[1]+d[2]),
-                        [(d[0]+d[2], horizontalGridLineBelow),
-                         (d[0]+d[2], horizontalGridLineBelow + 1)]  )
-
-        elif verticalGridLineLeft + 1 < verticalGridLineRight: # MIDDLE vertical line exists
-
-            # touching the edge case horizontally
-            if (d[1]-d[2]) % delta == 0 or (d[1]+d[2]) % delta == 0:
-                return (0, None)# MIDDLE vertical lines intersect horizontalGridLine, which
-                # hits the disc edge
-
-            # Both outside the square/disc, and at least one horizontal line
-            # exists in between.
-            if horizontalGridLineBelow + 1 < horizontalGridLineAbove:
-                return (0, None) # One of the vertical edges has a grid point
-
-            return (1, (delta*(verticalGridLineLeft + 1), d[1]+d[2]), # Hits grid edge
-                        [( verticalGridLineLeft + 1, horizontalGridLineBelow ),
-                         ( verticalGridLineLeft + 1, horizontalGridLineAbove ) ] )
-
-        else: #Neither vertical lines touch disc, and nothing inbetween these two lines
-
-            # touching the edge case horizontally
-            if (d[1]-d[2]) % delta == 0:
-                return (1, (d[0]-d[2] , d[1]-d[2]),
-                        [(verticalGridLineLeft,  horizontalGridLineBelow ),
-                         (verticalGridLineRight, horizontalGridLineBelow ) ])
-
-            if (d[1]+d[2]) % delta == 0:
-                return (1, (d[0]-d[2] , d[1]+d[2]),
-                        [(verticalGridLineLeft,  horizontalGridLineAbove ),
-                         (verticalGridLineRight, horizontalGridLineAbove ) ])
-
-            if horizontalGridLineBelow + 1 < horizontalGridLineAbove:
-                return (1, (d[0]-d[2] , delta*(horizontalGridLineBelow + 1)),
-                        [( verticalGridLineLeft,  horizontalGridLineBelow + 1 ),
-                         ( verticalGridLineRight, horizontalGridLineBelow + 1 )])
-
-            return (2, (d[0], d[1]),
-                          [
-                           (verticalGridLineLeft,  horizontalGridLineBelow),
-                           (verticalGridLineRight, horizontalGridLineBelow),
-                           (verticalGridLineRight, horizontalGridLineAbove),
-                           (verticalGridLineLeft,  horizontalGridLineAbove)
-                          ])
-
-        return False
-
 
     def inRect(self, p, r):
-        """Returns true iff p is in rectangle r"""
+        """Returns True iff p is in rectangle r
+        """
         x, y = p
         cx, cy, W, H = r
         return cx - W  <= x and x <= cx + W and cy - H  <= y and y <= cy + H
 
     def plusBlockerIntersectsRect(self, r, b, delta):
+        """
+        For a grid with diagonal distance delta, with plusBlocker shape b
+        connecting points as seen in Figure 1 of the paper:
+        https://drops.dagstuhl.de/storage/00lipics/lipics-vol204-esa2021/LIPIcs.ESA.2021.17/LIPIcs.ESA.2021.17.pdf
+        
+        This function returns True iff rectangle r touches the plusBlocker b for this given delta.
+        """
         x,y = b
         l = [(delta*x, delta*y), (delta*(x+1), delta*y), (delta*(x-1), delta*y), (delta*x,delta*(y+1)), (delta*x,delta*(y-1))]
         if any(self.inRect(z, r)  for z in l):
@@ -149,46 +50,19 @@ class DistantRepresentativesRectangles:
 
         return False
 
-
-    def LBlockerIntersectsRect(self, r, b, delta):
-
-        raise NotImplementedError
-
-        # TODO!
-
-        x,y = b
-        l = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
-        if any(self.inRect(z, r)  for z in l):
-            return True
-
-        cx, cy, W, H = r
-        if ((cx - W <= delta*x and cx+W >= delta*x)
-            and   ((cy - H >= delta*(y-1) and cy-H <= delta*(y+1))
-                or (cy + H >= delta*(y-1) and cy+H <= delta*(y+1)))):
-                return True
-
-        if ((cy - H <= delta*y and cy+H >= delta*y)
-            and   ((cx - W >= delta*(x-1) and cx-W <= delta*(x+1))
-                or (cx + W >= delta*(z-1) and cx+W <= delta*(x+1)))):
-                return True
-
-        return False
-
     def isPlusBlockerCentre(self, b):
+        """
+        Returns True if grid point b is the centre of a plus blocker.
+        We use the centre as the identifying point.
+        """
         i,j=b
         assert type(i) == int and type(j) == int
 
         #return (i+j) % 4 == 0
         return (i+j) % 4 == 0 and i % 2 == 0 and j % 2 == 0
 
-    def isLBlockerCentre(self, b):
-        i,j=b
-        assert type(i) == int and type(j) == int
-
-        return (-i+j) % 3 == 0
-
     # + blockers determined by centre grid points
-    def getPlusBlockersInDiscStupid(self, r, delta, n, Q):
+    def getPlusBlockersInDiscBrute(self, r, delta, n, Q):
         """In a brute force fashion, finds all + blocker shapes that intersect
         the rectangle, excluding blockers of Q."""
         cx, cy, W, H = r
@@ -303,9 +177,9 @@ class DistantRepresentativesRectangles:
         This will always succeed when delta <= delta*/f_l, where delta* is the largest
         value for which you can find a placement, and
 
-        f_1 = fill in  in the L1 norm
-        f_2 =
-        f_inf =
+        f_1 = 5     in the L1 norm
+        f_2 = 5.83  in the L2 norm
+        f_inf = 6   in the L infinity norm
 
         This may succeed when delta*/f_l < delta <= delta*, but this is not
         guaranteed. This will fail when delta > delta*, as no such placement exists.
@@ -315,7 +189,7 @@ class DistantRepresentativesRectangles:
         p = [None] * len(R)
 
         # Finds all blocker shapes that touch the rectangle.
-        blockers = [self.getPlusBlockersInDiscStupid(r, delta, len(R), set()) for r in R]
+        blockers = [self.getPlusBlockersInDiscBrute(r, delta, len(R), set()) for r in R]
 
         # These rectangles contain no blocker shapes, so their representatives
         # are the centre.
