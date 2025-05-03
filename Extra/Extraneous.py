@@ -141,6 +141,84 @@ class DistantRepresentativesRectangles:
         assert type(i) == int and type(j) == int
 
         return (-i+j) % 3 == 0
+    
+     def getGridPointsInRect(self):
+        # TODO what is our approach here?
+        """In a smart way, find all the blocker shapes that intersect the rectangle."""
+        raise NotImplementedError
+    
+    def getDistantRepresentativesLINF(self, D):
+        """
+        Given a set of discs D, tries to find a placement of representatives points
+        in each disc so that all points are as far apart as possible.
+
+        This algorithm will succeed at finding points that are >= 0.5 delta* apart,
+        where delta* is the distance between the closest pair of points in the
+        optimal solution. In other words, this returns a 2-Approximation.
+        """
+        raise NotImplementedError
+        assert(len(D) >=  1)
+        if len(D) == 1:
+            pass
+
+        # The optimal solutions takes on a special form. Generates all deltas
+        # that the optimal could be. Takes O(n^3) space/time.
+        deltas = set()
+        n = len(D)
+        for i in range(n):
+            for j in range(i+1, n):
+                if i!=j:
+                    d1 = D[i]
+                    d2 = D[j]
+
+                    d1L = d1[0] - d1[2]
+                    d1R = d1[0] + d1[2]
+                    d2L = d2[0] - d2[2]
+                    d2R = d2[0] + d2[2]
+
+                    if d2R > d1L:
+                            deltas = deltas.union({ (d2R - d1L) / k for k in range(1, n)})
+                    if d1R > d2L:
+                            deltas = deltas.union({ (d1R - d2L) / k for k in range(1, n)})
+
+                    d1B = d1[1]-d1[2]
+                    d1T = d1[1]+d1[2]
+                    d2B = d2[1] - d2[2]
+                    d2T = d2[1] + d2[2]
+
+                    if d2T > d1B:
+                            deltas = deltas.union({ (d2T - d1B) / k for k in range(1, n)})
+                    if d1T > d2B:
+                            deltas = deltas.union({ (d1T - d2B) / k for k in range(1, n)})
+
+        deltas = list(deltas)
+        deltas.sort()
+
+        L = len(deltas)
+        assert(L >= 2)
+
+        l = 0
+        u = L-1
+
+        i = (u+l) // 2
+
+        # Perform a binary Search
+        # Find delta_i where Placement(delta_i /2) succeeds but
+        #  Placement(delta_{i+1} /2) fails. The solution for delta_i/2 is a
+        #   2-Approximation.
+        p_best = None
+        while i >= l and i <= u and not (u - l <= 1):
+
+            p = self.Placement(D, deltas[i]/2)
+
+            if p is not None:
+                p_best = p
+                l = i
+            else:
+                u = i
+            i = (u+l) // 2
+
+        return self.Placement(D, deltas[l]/2)
 
 
 

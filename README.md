@@ -9,7 +9,7 @@ During my Master's program at the University of Waterloo, I helped discover an a
 
 Beyond the scope of that paper,
 I decided to implement this algorithm in Python.
-The coding involved implementing an algorithm for maximal matching in a bipartite graph, and performing a special form of binary search.
+Some common algorithms were used for this project, including an algorithm for maximal matching in a bipartite graph, and performing a special form of binary search.
 
 Additionally, I've implemented a visualization tool for the problem using the FabricJs drawing library and a Flask backend server. 
 

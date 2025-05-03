@@ -82,26 +82,22 @@ class DistantRepresentativesRectangles:
                 if (i, j) not in Q and self.plusBlockerIntersectsRect(r, (i, j), delta):
                     S = S.union({(i, j)})
 
-                    # THIS is probably a bad idea! why?
                     if len(S) >= n:
                         return S
 
         return S
 
 
-    def getGridPointsInRect(self):
-        # TODO what is our approach here?
-        """In a smart way, find all the blocker shapes that intersect the rectangle."""
-        raise NotImplementedError
-
-
     def inPlus(self, b, p, delta,err=0.00001):
+        """
+        Returns true if point p lies on the blocker b.
+        """
         x,y=b
-        a,b=p
-        if (delta*(x-1) <= a and a <= delta*(x+1) and abs(delta*y-b) < err):
+        a,c=p
+        if (delta*(x-1) <= a and a <= delta*(x+1) and abs(delta*y-c) < err):
             return True
 
-        return (delta*(y-1) <= b and b <= delta*(y+1) and abs(delta*x-a) < err)
+        return (delta*(y-1) <= c and c <= delta*(y+1) and abs(delta*x-a) < err)
 
 
     def plusBlockerAndRectFarApart(self, r, b, delta):
@@ -135,6 +131,9 @@ class DistantRepresentativesRectangles:
         return mindist >= delta
 
     def findRectAndPlusIntersectionPoint(self, r, b, delta,err=0.001):
+        """
+        Returns, if it exists, a point in the intersection of rectangle r and blockerShape b.
+        """
         x,y=b
         cx,cy,w,h=r
 
@@ -181,6 +180,10 @@ class DistantRepresentativesRectangles:
         f_2 = 5.83  in the L2 norm
         f_inf = 6   in the L infinity norm
 
+        For now the algorithm is just implemented/optimized for the L1 norm. 
+        It will be constant-approximation algorithm for other Lp norms, since all norms
+        are equivalent in R^2.
+
         This may succeed when delta*/f_l < delta <= delta*, but this is not
         guaranteed. This will fail when delta > delta*, as no such placement exists.
         """
@@ -217,7 +220,6 @@ class DistantRepresentativesRectangles:
                                 Q = Q.union({(x,y)})
 
         P = set()
-        #Pi = [set()]*len(D) # now called blockers
 
         # The remaining rectangles:
         # Find all the blockers within each rectangle, subtract Q.
@@ -249,7 +251,6 @@ class DistantRepresentativesRectangles:
             print("1. FAIL: no matching")
             return None
 
-        #print(M)
         numMatchingEdges = sum([sum(x) for x in M])
 
         # Assert all discs get matched to a grid point.
@@ -260,16 +261,11 @@ class DistantRepresentativesRectangles:
         # Convert grid points to corresponding point in delta sized grid.
         for i in range(n):
             for j in range(m):
-                #TODO 
-                if M[i][j] == 1:# and i == 1 and j == 1:
+                 
+                if M[i][j] == 1:
 
-                    # TODO
-                    #p[i]=(delta*P[j][0], delta*P[j][1])
                     p[i] = self.findRectAndPlusIntersectionPoint(R[i], P[j], delta)
-                    #assert p[i] is not None
-
-                    # i = 1, j = 1
-
+                    
                     if p[i] is None:
                         raise NotImplementedError
 
@@ -297,6 +293,9 @@ class DistantRepresentativesRectangles:
         This algorithm will succeed at finding points that are >= c delta* apart,
         where delta* is the distance between the closest pair of points in the
         optimal solution. In other words, this returns a c-Approximation. c depends on the norm.
+        For now, only the L1 norm case is implemented. But technically, since all p-norms
+        values are within a constant multiple of each other, then this is also a constant factor
+        approximation algorithm for any Lp norm, just not necessarily the best one.
         """
 
         if (len(R) <= 0):
@@ -321,93 +320,18 @@ class DistantRepresentativesRectangles:
         print("*********************************", 2*D, " ", 1/n)
 
         if p_success is None:
-            print("TODO: return a solution when delta=1/n")
+            # TODO: return a solution when delta=1/n"
+            # This failure only happens when the rectangles are extraordinaly small and close together.
+            # This shouldn't be an issue with the visualization tool.
             raise NotImplementedError
 
         while ub-lb > 1/ (n*n*D):
             delta = (lb+ub)/2
             p = self.Placement(R, delta)
             if p is None:
-                #print(delta , " fails")
                 ub = delta
             else:
-                #print(delta, "succeeds")
                 lb = delta
                 p_success=p
 
         return delta, p_success
-
-
-
-    def getDistantRepresentativesLINF(self, D):
-        """
-        Given a set of discs D, tries to find a placement of representatives points
-        in each disc so that all points are as far apart as possible.
-
-        This algorithm will succeed at finding points that are >= 0.5 delta* apart,
-        where delta* is the distance between the closest pair of points in the
-        optimal solution. In other words, this returns a 2-Approximation.
-        """
-        raise NotImplementedError
-        assert(len(D) >=  1)
-        if len(D) == 1:
-            pass
-
-        # The optimal solutions takes on a special form. Generates all deltas
-        # that the optimal could be. Takes O(n^3) space/time.
-        deltas = set()
-        n = len(D)
-        for i in range(n):
-            for j in range(i+1, n):
-                if i!=j:
-                    d1 = D[i]
-                    d2 = D[j]
-
-                    d1L = d1[0] - d1[2]
-                    d1R = d1[0] + d1[2]
-                    d2L = d2[0] - d2[2]
-                    d2R = d2[0] + d2[2]
-
-                    if d2R > d1L:
-                            deltas = deltas.union({ (d2R - d1L) / k for k in range(1, n)})
-                    if d1R > d2L:
-                            deltas = deltas.union({ (d1R - d2L) / k for k in range(1, n)})
-
-                    d1B = d1[1]-d1[2]
-                    d1T = d1[1]+d1[2]
-                    d2B = d2[1] - d2[2]
-                    d2T = d2[1] + d2[2]
-
-                    if d2T > d1B:
-                            deltas = deltas.union({ (d2T - d1B) / k for k in range(1, n)})
-                    if d1T > d2B:
-                            deltas = deltas.union({ (d1T - d2B) / k for k in range(1, n)})
-
-        deltas = list(deltas)
-        deltas.sort()
-
-        L = len(deltas)
-        assert(L >= 2)
-
-        l = 0
-        u = L-1
-
-        i = (u+l) // 2
-
-        # Perform a binary Search
-        # Find delta_i where Placement(delta_i /2) succeeds but
-        #  Placement(delta_{i+1} /2) fails. The solution for delta_i/2 is a
-        #   2-Approximation.
-        p_best = None
-        while i >= l and i <= u and not (u - l <= 1):
-
-            p = self.Placement(D, deltas[i]/2)
-
-            if p is not None:
-                p_best = p
-                l = i
-            else:
-                u = i
-            i = (u+l) // 2
-
-        return self.Placement(D, deltas[l]/2)
