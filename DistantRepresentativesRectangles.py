@@ -306,6 +306,12 @@ class DistantRepresentativesRectangles:
 
         n = len(R)
 
+
+        print("Rectangles:")
+        for r in R:
+            cx, cy, w, h = r
+            print(f"[({cx}, {cy}), w={w}, h={h}]")
+
         # Let's just assume the input is always integer
         #self.convertToInteger(R)
 

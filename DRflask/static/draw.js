@@ -123,8 +123,7 @@ function addRectangle() {
       obj.top = Math.min(obj.top, obj.canvas.height-obj.getBoundingRect().height+obj.top-obj.getBoundingRect().top);
       obj.left = Math.min(obj.left, obj.canvas.width-obj.getBoundingRect().width+obj.left-obj.getBoundingRect().left);
     }
-     
-
+     //obj.width = 10;
   });
 }
 
@@ -176,7 +175,7 @@ function computeDistantReps(computation_url="/listening") {
   for (var i=0; i < rects.length; i++) {
     //var r = {width:0, height: 0, cx:0, cy: 0};
     var r = rects[i];
-    var rect = [r.left + r.width/2, r.top + r.height/2, r.width/2, r.height/2];
+    var rect = [r.left + r.width/2*r.scaleX, r.top + r.height/2*r.scaleY, r.width/2*r.scaleX, r.height/2*r.scaleY];
     //console.log(rect);
     sendIt.push(rect);
   }
