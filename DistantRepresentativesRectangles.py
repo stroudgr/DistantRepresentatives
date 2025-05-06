@@ -2,15 +2,15 @@ from DistantRepresentatives import LInf, LOne, LTwoSquared
 import math
 from Matching import BipartiteGraph
 
-class Rectangle(object):
-    """A Rectangle class."""
+#class Rectangle(object):
+#    """A Rectangle class."""
 
-    def __init__(self, b, h, c):
-        super(Rectangle, self).__init__()
-        self.b = b
-        self.h = h
-        self.cx=c[0]
-        self.cy=c[1]
+#    def __init__(self, b, h, c):
+#        super(Rectangle, self).__init__()
+#        self.b = b
+#        self.h = h
+#        self.cx=c[0]
+#        self.cy=c[1]
 
 
 class DistantRepresentativesRectangles:
